@@ -1,3 +1,3 @@
-from . import db_api
-from . import misc
+from .db_api import *
+from .misc import *
 from .notify_admins import on_startup_notify
