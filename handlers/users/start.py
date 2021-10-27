@@ -6,25 +6,41 @@ from loader import dp, bot, users_con
 from filters import *
 from aiogram.dispatcher.filters.state import StatesGroup, State
 
-async def _user(_id):
-    user = users_con.user(_id)
+async def _user(_id, mention=None):
+    user = users_con.user(_id, mention)
     return user
 
 #СТАРТ
-@dp.message_handler(text='Назад 🔙')
+@dp.message_handler(text='Назад 🔙', state='*')
 @dp.message_handler(CommandStart(), IsPrivate())
 async def bot_start(message: types.Message):
-    await message.answer(f"Меню", reply_markup=MainKbs.MenuMarkup)
-    await _user(message.from_user.id)
+    chat = await bot.get_chat(message.from_user.id)
+    mention = chat.mention
+    text = f"""
+    Меню
+    """
+    if '@' in mention:
+        await _user(message.from_user.id, mention)
+    else:
+        await _user(message.from_user.id)
+        text = text + '\n\n Для корректного использования бота, пожалуйста, установите себе никнейм в настройках и снова напишите /start'
+    await message.answer(text, reply_markup=MainKbs.MenuMarkup)
+
 
 @dp.callback_query_handler(text='GoMenu', state='*')
 async def bot_start(call: types.CallbackQuery, state: FSMContext):
     await call.message.answer(f"Меню", reply_markup=MainKbs.MenuMarkup)
-    await _user(call.from_user.id)
+    chat = await bot.get_chat(call.from_user.id)
+    mention = chat.mention
+    if '@' in mention:
+        await _user(call.from_user.id, mention=mention)
+    else:
+        await _user(call.from_user.id)
 
 #ПРОФИЛЬ
-@dp.message_handler(IsPrivate(), text='Профиль 💼')
-async def profile(message: types.Message):
+@dp.message_handler(IsPrivate(), text='Профиль 💼', state='*')
+async def profile(message: types.Message, state: FSMContext):
+    await state.finish()
     user = await _user(message.from_user.id)
     chat = await bot.get_chat(message.from_user.id)
     rating = user[2]
