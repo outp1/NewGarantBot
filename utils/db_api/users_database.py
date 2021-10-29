@@ -36,6 +36,25 @@ class UsersDatabase(Sqlighter):
                 seller = cursor.execute('SELECT * FROM users WHERE nickname = ?', (mention,)).fetchone()
                 return seller
 
+    def update_balance(self, _id, amount2, earned_status=False, minus=True):
+        with Sqlighter(self.db_name) as connection:
+            cursor = connection.cursor()
+            with connection:
+                if not minus:
+                    amount1 = int(cursor.execute('SELECT balance FROM users WHERE user_id = ?', (_id,)).fetchone()[0])
+                    balance = amount1 + int(amount2)
+                if minus:
+                    amount1 = int(cursor.execute('SELECT balance FROM users WHERE user_id = ?', (_id,)).fetchone()[0])
+                    balance = amount1 - int(amount2)
+                if earned_status:
+                    earned1 = int(cursor.execute('SELECT earned FROM users WHERE user_id= ?', (_id,)).fetchone()[0])
+                    earned = earned1 + amount2
+                    cursor.execute('UPDATE users SET earned = ? WHERE user_id = ?', (earned, _id))
+                    connection.commit()
+                cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (balance, _id))
+                connection.commit()
+
+
 
 
 

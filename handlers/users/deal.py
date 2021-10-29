@@ -10,11 +10,27 @@ from loader import bot, users_con, deal_con
 from states import *
 from utils.misc import other
 
+from data.config import LOG_CHAT, SERVICES_CHAT, MODERATORS
+
+async def mailing_dispute(text, deal, user, seller):
+    for chat in MODERATORS:
+        await bot.send_message(chat, text=text, reply_markup=MainKbs.DisputeMarkup(deal, user, seller))
+
+async def mailing_services(text):
+    for chat in SERVICES_CHAT:
+        await bot.send_message(chat, text=text)
+
+async def mailing_logchat(text):
+    for chat in LOG_CHAT:
+        await bot.send_message(chat, text=text)
+
+async def _user(_id, mention=None):
+    user = users_con.user(_id, mention)
+    return user
 
 async def search_seller(_id):
     seller = users_con.seller(_id)
     return seller
-
 
 async def set_deal(deal_id, price, description, client, seller):
     deal = deal_con.set_deal(deal_id, price, description, client, seller)
@@ -25,6 +41,12 @@ async def take_deal(_id):
     deal = deal_con.take_deal(_id)
     return deal
 
+async def active_deals(_id):
+    return deal_con.active_deals(_id)
+
+async def delete_deal(_id):
+    deal_con.delete_deal(_id)
+
 
 async def deal_status(_id, status=None):
     if status:
@@ -32,6 +54,9 @@ async def deal_status(_id, status=None):
         return
     else:
         deal_con.status(_id)
+
+async def update_balance(_id, amount, earned=False, minus=False):
+    users_con.update_balance(_id, amount, earned, minus)
 
 
 @dp.message_handler(IsPrivate(), text='Поиск продавца 🔍')
@@ -115,9 +140,9 @@ async def send_deal(message: types.Message, state: FSMContext):
     data = await state.get_data()
     await bot.delete_message(message.from_user.id, data['msg'].message_id)
     await bot.delete_message(message.from_user.id, message.message_id)
+    price = data['price']
     user = await bot.get_chat(message.from_user.id)
     seller = await bot.get_chat(data['seller'])
-    price = data['price']
     description = message.text
     text = f"""<b>
 🤑   Сделка между {seller.mention} и {user.mention}</b>   🤑  
@@ -126,32 +151,39 @@ async def send_deal(message: types.Message, state: FSMContext):
 <b>Условия: </b>
 {description}
 
-Выберите действие:
+<b>Выберите действие:</b>
 """
     msg = await message.answer(text, reply_markup=MainKbs.SendDealMarkup)
     await state.update_data(msg=msg)
 
 
+
 # ОТПРАВИТЬ СДЕЛКУ
 @dp.callback_query_handler(text='ConfirmDeal', state='*')
 async def send_seller_deal(call: types.CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    await call.message.answer('<b>Сделка отправлена продавцу! Вам придёт оповещение когда он её примет ⏱</b>')
     uniq_id = other.rand_id_to_acc()
-    print(uniq_id)
+    data = await state.get_data()
+    balance = await _user(call.from_user.id)
     deal = await set_deal(uniq_id, data['price'], data['description'], call.from_user.id, data['seller'])
-    print(deal)
-    client = await bot.get_chat(deal[3])
-    text = f"""
-    <b>Сделка под номером <code>{uniq_id}</code> 💰</b>
-    
-<b>⊳   Покупатель: </b>{client.mention}
-<b>⊳   Сумма сделки: </b>{deal[1]}₽
-<b>
-⊳    Принимаете ли вы сделку?
-</b> 
-"""
-    await bot.send_message(deal[4], text=text, reply_markup=MainKbs.ConfirmSellerMarkup(deal[0]))
+    if int(balance[5]) >= int(deal[1]):
+        try: await update_balance(call.from_user.id, int(deal[1]), minus=True)
+        except: return await call.answer('❌ Ошибка ❌')
+        await call.message.answer('<b>Сделка отправлена продавцу! Вам придёт оповещение когда он её примет ⏱</b>')
+        client = await bot.get_chat(deal[3])
+        text = f"""
+        <b>Сделка под номером <code>{uniq_id}</code> 💰</b>
+        
+        <b>⊳   Покупатель: </b>{client.mention}
+        <b>⊳   Сумма сделки: </b>{deal[1]}₽
+        <b>
+        ⊳    Принимаете ли вы сделку?
+        </b> 
+        """
+        await bot.send_message(deal[4], text=text, reply_markup=MainKbs.ConfirmSellerMarkup(deal[0]))
+        await state.finish()
+    else:
+        await delete_deal(deal[0])
+        await call.message.answer("<b>❌  На балансе недостаточно средств, пополните баланс через профиль  ❌</b>")
 
 # КНОПКИ ПРИНЯТИЯ СДЕЛКИ
 @dp.callback_query_handler(MainKbs.confirm_callbackdata.filter(confirm=['True']), state='*')
@@ -163,10 +195,21 @@ async def seller_confirm_deal(call: types.CallbackQuery, callback_data: dict):
         await bot.edit_message_text('<b>' + call.message.text + '</b>', call.from_user.id, call.message.message_id)
     await bot.send_message(deal[3],
                            text=f'<b>✅  Сделка под номером <code>{callback_data["id"]}</code> принята продавцом!</b>')
+    user = await _user(deal[3])
+    seller = await _user(deal[4])
+    text=f""" 
+<b>♻️ Между {user[6]} и {seller[6]} началась сделка !️ ♻️
+Айди сделки: <code>{deal[0]}</code>
+Сумма сделки: <code>{deal[1]}</code>₽
+</b>
+"""
+    await mailing_services(text)
+
 @dp.callback_query_handler(MainKbs.confirm_callbackdata.filter(confirm=['False']), state='*')
 async def seller_cancel_deal(call: types.CallbackQuery, callback_data: dict):
     deal = await take_deal(callback_data['id'])
     await deal_status(callback_data['id'], '4')
+    await update_balance(deal[3], deal[1])
     await call.answer('❌ Вы отказались от сделки')
     with suppress(MessageNotModified):
         await bot.edit_message_text('<b>' + call.message.text + '</b>', call.from_user.id, call.message.message_id)
@@ -177,6 +220,207 @@ async def seller_cancel_deal(call: types.CallbackQuery, callback_data: dict):
 @dp.callback_query_handler(text='MyDeals', state='*')
 async def my_deals(call: types.CallbackQuery):
     await call.answer('Загружаем информацию по сделкам...')
+    deals = await active_deals(call.from_user.id)
+    for a in deals[0]:
+        seller = await bot.get_chat(a[4])
+        user = await bot.get_chat(a[3])
+        text = f"""
+    <b>Сделка под номером <code>{a[0]}</code> 💰</b>
+    
+<b>⊳   Покупатель: </b>{user.mention}
+<b>⊳   Сумма сделки: </b>{a[1]}₽
+<b>
+⊳    Принимаете ли вы сделку?
+</b> 
+"""
+        await call.message.answer(text=text, reply_markup=MainKbs.ConfirmSellerMarkup(a[0]))
+    deals = await active_deals(call.from_user.id)
+    for a in deals[1]:
+        seller = await bot.get_chat(a[4])
+        user = await bot.get_chat(a[3])
+        text = f"""<b>
+🤑   Сделка между {seller.mention} и {user.mention}</b>   🤑  
+
+<b>Сумма сделки: </b>{a[1]}
+<b>Условия: </b>
+{a[2]}
+
+<b>Ожидайте пока продавец примет или отменит вашу сделку</b>
+"""
+        await call.message.answer(text)
+    deals = await active_deals(call.from_user.id)
+    for a in deals[2]:
+        seller = await bot.get_chat(a[4])
+        user = await bot.get_chat(a[3])
+        text = f"""<b>
+🤑   Сделка между {seller.mention} и {user.mention}</b>   🤑  
+
+<b>Сумма сделки: </b>{a[1]}
+<b>Условия: </b>
+{a[2]}
+"""
+        await call.message.answer(text=text, reply_markup=MainKbs.BuyDealsMarkup(a[0]))
+    deals = await active_deals(call.from_user.id)
+    for a in deals[3]:
+        seller = await bot.get_chat(a[4])
+        user = await bot.get_chat(a[3])
+        text = f"""
+    <b>Сделка под номером <code>{a[0]}</code> 💰</b>
+    
+<b>⊳   Покупатель: </b>{user.mention}
+<b>⊳   Сумма сделки: </b>{a[1]}₽
+<b>
+⊳    Выберите действие:
+</b> 
+"""
+        await call.message.answer(text=text, reply_markup=MainKbs.SellDealsMarkup(a[0]))
+
+# ОТПРАВИТЬ, ВЕРНУТЬ ДЕНЬГИ ИЛИ ОТКРЫТЬ СПОР ПО СДЕЛКЕ
+@dp.callback_query_handler(MainKbs.buydeals_callback_data.filter(send_money='True'), state='*')
+async def buydeals_sendmoney(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    print(callback_data)
+    text = '<b>Подтвердите действие, и деньги будут отправлены, а сделка закрыта</b>'
+    await call.message.answer(text, reply_markup=MainKbs.ConfirmBuydeals)
+    await state.update_data(deal=callback_data['_id'], send=callback_data['send_money'])
+    with suppress(MessageNotModified):
+        await bot.edit_message_text('<b>' + call.message.text + '</b>', call.from_user.id, call.message.message_id)
+
+@dp.callback_query_handler(MainKbs.selldeals_callback_data.filter(dispute='False'), state='*')
+async def selldeals_returnmoney(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    print(callback_data)
+    text = '<b>Подтвердите действие, и деньги будут возвращены, а сделка закрыта</b>'
+    await call.message.answer(text, reply_markup=MainKbs.ConfirmReturnMoney)
+    await state.update_data(deal=callback_data['_id'], dispute=callback_data['dispute'])
+    with suppress(MessageNotModified):
+        await bot.edit_message_text('<b>' + call.message.text + '</b>', call.from_user.id, call.message.message_id)
+
+@dp.callback_query_handler(MainKbs.selldeals_callback_data.filter(dispute='True'), state='*')
+async def selldeals_dispute(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    text= '<b>Подтвердите действие и сделка будет переведена в режим арбитража</b>'
+    await call.message.answer(text, reply_markup=MainKbs.ConfirmDispute)
+    await state.update_data(deal=callback_data['_id'], send='seller')
+    with suppress(MessageNotModified):
+        await bot.edit_message_text('<b>' + call.message.text + '</b>', call.from_user.id, call.message.message_id)
+
+@dp.callback_query_handler(MainKbs.buydeals_callback_data.filter(send_money='False'), state='*')
+async def selldeals_dispute(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    text= '<b>Подтвердите действие и сделка будет переведена в режим арбитража</b>'
+    await call.message.answer(text, reply_markup=MainKbs.ConfirmDispute)
+    await state.update_data(deal=callback_data['_id'], send='user')
+    with suppress(MessageNotModified):
+        await bot.edit_message_text('<b>' + call.message.text + '</b>', call.from_user.id, call.message.message_id)
+
+# КНОПКИ ПОДТВЕРЖДЕНИЯ ДЕЙСТВИЙ
+@dp.callback_query_handler(text='ConfirmDispute', state='*')
+async def ConfirmDispute(call: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    deal = await take_deal(data['deal'])
+    print(deal)
+    if data['send'] == 'user':
+        user = await _user(deal[3])
+        seller = await _user(deal[4])
+        await call.message.answer('<b>Сделка переведена в режим арбитража, ожидайте ответа администратора...</b>')
+        await bot.send_message(deal[4],
+                               f'<b>❕  Покупатель сделки под номером <code>{deal[0]}</code> только что перевёл сделку в режим арбитража, ожидайте сообщения администратора!  ❕</b>')
+        await deal_status(deal[0], 3)
+        text1 = f"""<b>
+        🛑  Спор между покупателем {user[6]} и селлером {seller[6]}  🛑 
+    
+        Сумма сделки: {deal[1]}₽
+        Условия сделки: 
+        {deal[2]}
+        </b>
+                    """
+        await mailing_dispute(text1, deal[0], user[0], seller[0])
+    else:
+        user = await _user(deal[3])
+        seller = await _user(deal[4])
+        await call.message.answer('<b>Сделка переведена в режим арбитража, ожидайте ответа администратора...</b>')
+        await bot.send_message(deal[3],
+                               '<b>❕  Продавец только что перевёл сделку в режим арбитража, ожидайте сообщения администратора!  ❕</b>')
+        await deal_status(deal[0], 3)
+        text1 = f"""<b>
+        🛑  Спор между покупателем {user[6]} и селлером {seller[6]}  🛑 
+
+        Сумма сделки: {deal[1]}₽
+        Условия сделки: 
+        {deal[2]}
+        </b>
+        """
+        await mailing_dispute(text1, deal[0], user[0], seller[0])
+
+
+
+
+@dp.callback_query_handler(text='ConfirmBuydeals', state='*')
+async def confirm_send_money(call: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    deal = await take_deal(data['deal'])
+    if deal[5] == 1:
+        if data['send'] == 'True':
+            await update_balance(deal[4], deal[1], earned=True)
+            await deal_status(deal[0], 2)
+            await bot.delete_message(call.from_user.id, call.message.message_id)
+            await call.answer('✅ Деньги отправлены')
+            user = _user(deal[3])
+            seller = _user(deal[4])
+            text =f"""<b>
+🥳       Сделка под номером <code>{deal[0]}</code> завершена!     🥳
+🥳       На ваш баланс поступило <code>{deal[1]}</code>₽             🥳     
+            
+            </b>
+            """
+            await bot.send_message(text=text, chat_id=deal[4])
+            text1 = f""" 
+            <b>♻️ {user[6]} и {seller[6]} только что завершили сделку!️ ♻️
+            Айди сделки: <code>{deal[0]}</code>
+            Сумма сделки: <code>{deal[1]}</code>₽
+            </b>
+            """
+            await mailing_services(text1)
+            await call.message.answer('Вы можете оставить отзыв продавцу!', reply_markup=MainKbs.FeedBackMarkup(deal[4]))
+
+    else:
+        return await call.message.answer('<b>Деньги за данную сделку уже отправлены ✌</b>')
+
+
+@dp.callback_query_handler(text='ConfirmReturnMoney', state='*')
+async def confirm_return_money(call: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    deal = await take_deal(data['deal'])
+    print(data['dispute'])
+    if deal[5] == 1:
+        if data['dispute'] == 'False':
+            await update_balance(deal[3], deal[1])
+            await deal_status(deal[0], 2)
+            await bot.delete_message(call.from_user.id, call.message.message_id)
+            await call.answer('✅ Деньги отправлены')
+            text = f"""<b>
+♻️Деньги за сделку под номером <code>{deal[0]}</code> возвращены продавцом!
+♻️На ваш баланс поступило <code>{deal[1]}</code>₽
+
+                        </b>
+                        """
+            await bot.send_message(text=text, chat_id=deal[3])
+    else:
+        return await call.message.answer('<b>Деньги за данную сделку уже отправлены ✌</b>')
+
+
+# КНОПКИ СПОРА МОДЕРАТОРА
+@dp.callback_query_handler(MainKbs.dispute_callbackdata.filter(), state='*')
+async def dispute_buttons(call: types.CallbackQuery, callback_data: dict):
+    await call.answer('✅ Деньги отправлены')
+    await bot.edit_message_text(chat_id=call.from_user.id, text=call.message.text, message_id=call.message.message_id)
+    deal = await take_deal(callback_data['deal'])
+    earned = False
+    print(callback_data['won'])
+    print(deal[4])
+    if str(callback_data['won']) == str(deal[4]):
+        print('true')
+        earned = True
+    await update_balance(callback_data['won'], deal[1], earned=earned)
+    await bot.send_message(callback_data['won'], text='<b>🥳  Вы выиграли спор, деньги зачислены на ваш баланс!  🥳</b>')
+    await deal_status(deal[0], 4)
 
 # КНОПКИ ОТМЕНЫ
 @dp.callback_query_handler(text='CancelDeal', state='*')
@@ -190,3 +434,7 @@ async def go_back(call: types.CallbackQuery, state: FSMContext):
     seller = data['seller']
     await state.finish()
     await state.update_data(seller=seller)
+
+
+
+

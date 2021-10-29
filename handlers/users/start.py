@@ -12,7 +12,7 @@ async def _user(_id, mention=None):
 
 #СТАРТ
 @dp.message_handler(text='Назад 🔙', state='*')
-@dp.message_handler(CommandStart(), IsPrivate())
+@dp.message_handler(CommandStart(), IsPrivate(), state='*')
 async def bot_start(message: types.Message):
     chat = await bot.get_chat(message.from_user.id)
     mention = chat.mention
@@ -45,7 +45,7 @@ async def profile(message: types.Message, state: FSMContext):
     chat = await bot.get_chat(message.from_user.id)
     rating = user[2]
     verif = user[3]
-    if verif == 'Неверефицированный':
+    if verif == 'Неверифицрованный':
         verif = verif + ' <a href="https://google.com">(Верификация)</a>'
     if rating == 0:
         rating = 'Вы ещё не совершали ни одной сделки'
