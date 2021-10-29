@@ -12,4 +12,6 @@ SERVICES_CHAT = []
 
 MODERATORS = ['1344493803']
 
+QIWI_ST = ''
+
 
