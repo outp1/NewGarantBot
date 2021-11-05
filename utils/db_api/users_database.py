@@ -54,6 +54,21 @@ class UsersDatabase(Sqlighter):
                 cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (balance, _id))
                 connection.commit()
 
+    def update_rating(self, _id, rate):
+        with Sqlighter(self.db_name) as connection:
+            cursor = connection.cursor()
+            with connection:
+                rate = float("{0:.1f}".format(rate))
+                cursor.execute('UPDATE users SET rating = ? WHERE user_id = ?', (rate, _id))
+                connection.commit()
+
+    def take_verif(self, _id):
+        with Sqlighter(self.db_name) as connection:
+            cursor = connection.cursor()
+            with connection:
+                cursor.execute('UPDATE users SET status = "Верифицированный" WHERE user_id = ?', (_id,))
+                connection.commit()
+
 
 
 

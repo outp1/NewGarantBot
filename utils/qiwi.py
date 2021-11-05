@@ -1,34 +1,48 @@
 import asyncio
 #from data.config import QIWI_ST, QIWI_PHONE
-
+import json
 import aiohttp
 from SimpleQIWI import *
-
+from glQiwiApi import QiwiWrapper
 from datetime import datetime, timezone, timedelta
+from data.config import QIWI_ST, QIWI_PHONE
 
-token = '31093f320368ad6d9ada8b2ac9e2b7e9' #QIWI_ST
-phone = '+79189656523' #QIWI_PHONE
+token = QIWI_ST
+phone = QIWI_PHONE
+
+qiwi1 = QiwiWrapper(token, phone)
+
+async def check_bill(amount, comment):
+    status = await qiwi1.check_transaction(int(amount), comment=comment)
+    return status
 
 
 class Qiwi():
-    def __init__(self, token, phone):
+    def __init__(self, token, phone, nick):
         self.token = token
         self.phone = phone
+        self.nick = nick
+
 
     async def create_bill(self, amount, comment):
         headers = {
             "Authorization": f"Bearer {self.token}",
-            "Accept": "application/json"
+            "Accept": "application/json",
+            "Content-Type": "application/json"
         }
+        #https://qiwi.com/payment/form/99999?extra[%27account%27]=79991112233&amountInteger=1&amountFraction=0&extra[%27comment%27]=test123&currency=643
+        #https://qiwi.com/99999?extra%5B'account'%5D=%2B79189656523&amountInteger=10&amountFraction=0&extra%5B'comment'%5D=213939&extra%5B'accountType'%5D=nickname&currency=643
         async with aiohttp.ClientSession(headers=headers) as session:
-            data = {"amountInteger": amount, "currency": 643, "extra['comment']": comment, "extra['account']": self.phone, "extra['accountType']": 'nickname'}
-            async with session.get(f"https://qiwi.com/99999", params=data) as response:
-                print(response.real_url)
+            data = {"extra['account']": self.nick,
+                    "amountInteger": amount,
+                    'amountFraction': 0,
+                    "extra['comment']": comment,
+                    "extra['accountType']": 'nickname', "currency": 643}
+            async with session.get(f"https://qiwi.com/payment/form/99999", params=data) as response:
+                return response.real_url
 
 
-
-
-qiwi = Qiwi(token, phone)
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(qiwi.create_bill('10', '213939'))
+loop.run_until_complete(check_bill(10, '213939'))
+
