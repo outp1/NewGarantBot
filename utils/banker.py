@@ -32,6 +32,7 @@ class Banker:
             return False
         try:
             response = re.search(r'BTC \((\d+).(\d+)', response)
+            print(response)
             amount1 = response.group().split('(')[1]
             amount = ''
             for a in amount1:

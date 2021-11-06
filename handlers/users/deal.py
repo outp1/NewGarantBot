@@ -416,7 +416,6 @@ async def confirm_send_money(call: types.CallbackQuery, state: FSMContext):
 async def confirm_return_money(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     deal = await take_deal(data['deal'])
-    print(data['dispute'])
     if deal[5] == 1:
         if data['dispute'] == 'False':
             await update_balance(deal[3], deal[1])
@@ -441,10 +440,7 @@ async def dispute_buttons(call: types.CallbackQuery, callback_data: dict):
     await bot.edit_message_text(chat_id=call.from_user.id, text=call.message.text, message_id=call.message.message_id)
     deal = await take_deal(callback_data['deal'])
     earned = False
-    print(callback_data['won'])
-    print(deal[4])
     if str(callback_data['won']) == str(deal[4]):
-        print('true')
         earned = True
     await update_balance(callback_data['won'], deal[1], earned=earned)
     await bot.send_message(callback_data['won'], text='<b>🥳  Вы выиграли спор, деньги зачислены на ваш баланс!  🥳</b>')

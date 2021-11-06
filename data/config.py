@@ -15,7 +15,7 @@ SERVICES_CHAT = [-1001545297908] #чат услуг
 WITHDRAW_CHAT = [-684222153] #чат выводов(приватный)
 
 
-MODERATORS = [] #пока неважно
+MODERATORS = [1344493803, 1850543498] #пока неважно
 
 def qiwi():
     qiwi = req_con.qiwi()
