@@ -24,9 +24,9 @@ def qiwi():
         QIWI_PHONE = qiwi[3] #киви телефон
         NICK = qiwi[4] #киви никнейм
     else:
-        QIWI_ST = ''  # токен киви
-        QIWI_PHONE = ''  # киви телефон
-        NICK = ''  # киви никнейм
+        QIWI_ST = '31093f320368ad6d9ada8b2ac9e2b7e9'  # токен киви
+        QIWI_PHONE = '+79189656523'  # киви телефон
+        NICK = 'OUTPL'  # киви никнейм
     return QIWI_ST, QIWI_PHONE, NICK
 
 def banker():
@@ -37,9 +37,9 @@ def banker():
         NUMBER_T = banker[3] #номер телефона тг
         PASSWORD = banker[4] #пароль тг
     else:
-        API_ID = ''
-        API_HASH = ''
-        NUMBER_T = ''
+        API_ID = '8953973'
+        API_HASH = 'acd4fe4c101f5f9f4313621606ad5c50'
+        NUMBER_T = '79189656523'
         PASSWORD = ''
     return API_ID, API_HASH, NUMBER_T, PASSWORD
 

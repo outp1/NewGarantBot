@@ -1,2 +1,5 @@
 aiogram<3.0
 environs~=8.0.0
+Telethon~=1.23.0
+glqiwiapi~=1.1.3
+SimpleQIWI~=0.7
