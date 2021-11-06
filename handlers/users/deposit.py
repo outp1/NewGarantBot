@@ -8,17 +8,17 @@ from states.states import Payment, Withdraw
 from aiogram.dispatcher.storage import FSMContext
 from typing import Union
 from utils.qiwi import Qiwi, check_bill
-from data.config import API_ID, API_HASH, NUMBER_T, QIWI_ST, QIWI_PHONE, NICK, LOG_CHAT, WITHDRAW_CHAT, PASSWORD
+from data.config import qiwi, banker, LOG_CHAT, WITHDRAW_CHAT
 from loader import deal_con, users_con, w_con
 from utils.misc import other
 from aiogram.utils.exceptions import MessageNotModified
 from utils.p2p import QiwiP2P
 
+data_qiwi = qiwi()
+data_banker = banker()
 
-
-qiwi_p2p = QiwiP2P(QIWI_ST)
-btc = Banker(API_ID, API_HASH, NUMBER_T, PASSWORD)
-qiwi = Qiwi(QIWI_ST, QIWI_PHONE, NICK)
+btc = Banker(data_banker[0], data_qiwi[1], data_banker[2], data_banker[3])
+qiwi = Qiwi(data_qiwi[0], data_qiwi[1], data_qiwi[2])
 
 async def mailing_logchat(text):
     for chat in LOG_CHAT:

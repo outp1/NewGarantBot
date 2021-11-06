@@ -8,7 +8,7 @@ class UsersDatabase(Sqlighter):
         self.db_name = db_name
 
     #ПОЛУЧАЕМ ЮЗЕРА
-    def user(self, _id, mention=None):
+    def user(self, _id, mention=None, ref=None):
         with Sqlighter(self.db_name) as connection:
             cursor = connection.cursor()
             with connection:
@@ -19,12 +19,15 @@ class UsersDatabase(Sqlighter):
                         return user
                     return user
                 else:
+
                     reg_time = datetime.datetime.today().strftime("%d.%m.%Y")
                     user = cursor.execute('INSERT INTO users (user_id, registration_date) VALUES(?, ?)', (_id, reg_time))
                     connection.commit()
                     if mention:
                         user = cursor.execute('UPDATE users SET nickname = ? WHERE user_id = ?', (mention, _id))
                         connection.commit()
+                    if ref:
+                        self.add_ref(ref)
                     return user
 
 
@@ -68,6 +71,27 @@ class UsersDatabase(Sqlighter):
             with connection:
                 cursor.execute('UPDATE users SET status = "Верифицированный" WHERE user_id = ?', (_id,))
                 connection.commit()
+
+    def add_ref(self, _id):
+        with Sqlighter(self.db_name) as connection:
+            cursor = connection.cursor()
+            with connection:
+                try:
+                    amount = cursor.execute('SELECT refs FROM users WHERE user_id = ?', (_id,)).fetchone()[0]
+                    amount = amount + 1
+                    cursor.execute('UPDATE users SET refs = ? WHERE user_id = ?', (amount, _id))
+                    connection.commit()
+                except:
+                    a = cursor.execute('SELECT refs FROM referals WHERE link = ?', (_id,)).fetchone()[0]
+                    a = a + 1
+                    cursor.execute('UPDATE referals SET refs = ? WHERE link = ?', (a, _id))
+                    connection.commit()
+
+    def check_refs(self, _id):
+        with Sqlighter(self.db_name) as connection:
+            cursor = connection.cursor()
+            with connection:
+                return cursor.execute('SELECT user_id, refs FROM users WHERE user_id = ?', (_id,)).fetchone()
 
 
 

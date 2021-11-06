@@ -19,4 +19,18 @@ class Withdraw(StatesGroup):
     banker = State()
 
 class Admin(StatesGroup):
-    id = State()
+
+    id_verif = State()
+    id_refs = State()
+
+    api_id_banker = State()
+    api_hash = State()
+    number_banker = State()
+    pass_banker = State()
+
+    qiwi_st = State()
+    qiwi_phone = State()
+    qiwi_nick = State()
+
+    ref_name = State()
+    ref_name_check = State()

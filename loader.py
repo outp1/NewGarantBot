@@ -12,4 +12,4 @@ users_con = UsersDatabase('utils/db_api/db.db')
 deal_con = DealsDatabase('utils/db_api/db.db')
 feed_con = FeedDatabase('utils/db_api/db.db')
 w_con = WithdrawDatabase('utils/db_api/db.db')
-
+ref_con = ReferalsDatabase('utils/db_api/db.db')

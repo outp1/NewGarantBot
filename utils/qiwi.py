@@ -5,12 +5,12 @@ import aiohttp
 from SimpleQIWI import *
 from glQiwiApi import QiwiWrapper
 from datetime import datetime, timezone, timedelta
-from data.config import QIWI_ST, QIWI_PHONE
+from data.config import qiwi, banker
 
-token = QIWI_ST
-phone = QIWI_PHONE
+token = qiwi()[0]
+phone = qiwi()[1]
 
-qiwi1 = QiwiWrapper(token, phone)
+qiwi1 = QiwiWrapper(token, str(phone))
 
 async def check_bill(amount, comment):
     status = await qiwi1.check_transaction(int(amount), comment=comment)
@@ -43,6 +43,5 @@ class Qiwi():
 
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(check_bill(10, '213939'))
+
 
