@@ -17,6 +17,11 @@ GoMenuMarkup = types.InlineKeyboardMarkup()
 GoMenu = types.InlineKeyboardButton(text='⬅', callback_data='GoMenu')
 GoMenuMarkup.add(GoMenu)
 
+def LinkServices(link):
+    LinkServices = types.InlineKeyboardMarkup()
+    LinkServices(types.InlineKeyboardButton(text='👉 Чат', link=link))
+    return LinkServices
+
 GoMenuDMarkup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 GoDMenu = types.KeyboardButton(text='⬅')
 GoMenuDMarkup.add(GoDMenu)

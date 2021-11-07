@@ -5,7 +5,7 @@ from aiogram.dispatcher.storage import FSMContext
 from loader import dp, bot, users_con
 from filters import *
 from aiogram.dispatcher.filters.state import StatesGroup, State
-from data.config import ADMINS
+from data.config import ADMINS, SERVICES_CHAT
 from states.states import Admin
 
 async def _user(_id, mention=None, ref=None):
@@ -19,6 +19,13 @@ async def _user(_id, mention=None, ref=None):
 async def bot_start(message: types.Message):
     chat = await bot.get_chat(message.from_user.id)
     mention = chat.mention
+    for i in SERVICES_CHAT:
+        print(i)
+        chat_check = await bot.get_chat(i)
+        status = await bot.get_chat_member(chat_check, chat.id)
+        if status.status in ['left', 'kicked']:
+            link = await chat_check.get_url()
+            return await message.answer(f'❕ <b>Чтобы пользоваться гарант ботом вступите в чат услуг проекта:</b>', reply_markup=MainKbs.LinkServices(link))
     text = f"""
 🔝 <b>Главное меню</b>
     """
@@ -35,6 +42,21 @@ async def bot_start(message: types.Message):
         text = text + '\n\n Для корректного использования бота, пожалуйста, установите себе никнейм в настройках и снова напишите /start'
     await message.answer_photo(photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption=text, reply_markup=MainKbs.MenuMarkup)
 
+@dp.message_handler(IsNotSub(), state='*')
+async def msg(m: types.Message, state: FSMContext):
+    try: await state.finish()
+    except: pass
+    chatss = []
+    uid = m.from_user.id
+    for i in SERVICES_CHAT:
+        chat = await bot.get_chat(i)
+        status = await bot.get_chat_member(i, uid)
+        if status.status in ['left', 'kicked']:
+            link = await chat.get_url()
+            chatss.append(f'<a href="{link}">{chat.title}</a>')
+    if len(chatss) >= 1:
+        return await m.answer(f'❕ <b>Чтобы пользоваться гарант ботом вступите в чат услуг проекта:</b>',
+                                    reply_markup=MainKbs.LinkServices(link))
 
 @dp.callback_query_handler(text='GoMenu', state='*')
 async def bot_start(call: types.CallbackQuery, state: FSMContext):
@@ -51,6 +73,35 @@ async def bot_start(call: types.CallbackQuery, state: FSMContext):
         await _user(call.from_user.id, mention=mention)
     else:
         await _user(call.from_user.id)
+
+@dp.chat_member_handler(is_group_join=True, state='*')
+async def new_user_channel(update: types.ChatMemberUpdated, state: FSMContext):
+    try: await bot.get_chat(update.new_chat_member.user.id)
+    except:
+        try: await state.finish()
+        except: pass
+        return
+    chatss = []
+    a = await state.get_data()
+    try:
+        ref_id = a['ref_id']
+    except:
+        ref_id = 0
+    uid = update.new_chat_member.user.id
+    for i in SERVICES_CHAT:
+        status = await bot.get_chat_member(i, uid)
+        if status.status in ['left', 'kicked']:
+            chatss.append(1)
+        if update.new_chat_member.status == 'member':
+            chatss == 0
+    if len(chatss) == 0:
+        user = await check_user(str(uid))
+        await bot.send_message(chat=uid, text=
+                                     f'<b>Вы вступили в чат услуг. Приступайте к работе!</b>')
+        await bot.send_photo(chat=uid, photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption='🔝 <b>Главное меню</b>',
+                             reply_markup=MainKbs.MenuMarkup)
+
+
 
 #ПРОФИЛЬ
 @dp.message_handler(IsPrivate(), text='💁‍♂ Профиль', state='*')
