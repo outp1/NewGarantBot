@@ -22,9 +22,10 @@ async def bot_start(message: types.Message):
     for i in SERVICES_CHAT:
         print(i)
         chat_check = await bot.get_chat(i)
-        status = await bot.get_chat_member(chat_check, chat.id)
+        status = await bot.get_chat_member(i, message.from_user.id)
         if status.status in ['left', 'kicked']:
             link = await chat_check.get_url()
+            print(link)
             return await message.answer(f'❕ <b>Чтобы пользоваться гарант ботом вступите в чат услуг проекта:</b>', reply_markup=MainKbs.LinkServices(link))
     text = f"""
 🔝 <b>Главное меню</b>
@@ -76,6 +77,7 @@ async def bot_start(call: types.CallbackQuery, state: FSMContext):
 
 @dp.chat_member_handler(is_group_join=True, state='*')
 async def new_user_channel(update: types.ChatMemberUpdated, state: FSMContext):
+    print('da')
     try: await bot.get_chat(update.new_chat_member.user.id)
     except:
         try: await state.finish()
@@ -95,11 +97,12 @@ async def new_user_channel(update: types.ChatMemberUpdated, state: FSMContext):
         if update.new_chat_member.status == 'member':
             chatss == 0
     if len(chatss) == 0:
-        user = await check_user(str(uid))
-        await bot.send_message(chat=uid, text=
+        user = await _user(str(uid))
+        await bot.send_message(uid, text=
                                      f'<b>Вы вступили в чат услуг. Приступайте к работе!</b>')
-        await bot.send_photo(chat=uid, photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption='🔝 <b>Главное меню</b>',
+        await bot.send_photo(uid, photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption='🔝 <b>Главное меню</b>',
                              reply_markup=MainKbs.MenuMarkup)
+
 
 
 

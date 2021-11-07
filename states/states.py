@@ -34,3 +34,5 @@ class Admin(StatesGroup):
 
     ref_name = State()
     ref_name_check = State()
+
+    update_balance_adm = State()

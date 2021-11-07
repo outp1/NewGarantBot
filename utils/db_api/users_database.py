@@ -93,6 +93,12 @@ class UsersDatabase(Sqlighter):
             with connection:
                 return cursor.execute('SELECT user_id, refs FROM users WHERE user_id = ?', (_id,)).fetchone()
 
+    def set_balance(self, _id, amount):
+        with Sqlighter(self.db_name) as connection:
+            cursor = connection.cursor()
+            with connection:
+                cursor.execute('UPDATE users SET balance = ? WHERE user_id = ?', (amount, _id))
+                connection.commit()
 
 
 

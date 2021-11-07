@@ -8,6 +8,7 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 from data.config import ADMINS
 from states.states import Admin
 from data.config import req_con
+from .deal import _user
 
 async def switch_banker(token, api_hash, login, _pass):
     req_con.switch_banker(token, api_hash, login, _pass)
@@ -23,6 +24,8 @@ async def generate_link(text):
 
 async def take_link_stats(text):
     return ref_con.take_link(str(text))
+
+
 
 @dp.message_handler(IsPrivate(), commands='ebot', state='*', is_admin=True)
 async def adm_panel(message: types.Message):
@@ -101,12 +104,18 @@ async def ref_stats(call: types.CallbackQuery, state: FSMContext):
 @dp.message_handler(state=Admin.id_refs)
 async def check_refs(message: types.Message, state: FSMContext):
     print('a')
-    refs = await get_refs(int(message.text))
+    user = await _user(int(message.text))
     text = f'''
-Айди пользователя: {str(refs[0])}
-Количество приведенных человек: {refs[1]}
+Айди пользователя: {str(user[0])}
+Количество приведенных человек: {user[7]}
+Бланас: {user[5]}
+Сумма сделок: {user[4]}
+Дата регистрации: {user[1]}
+Рейтинг: {user[2]}
+Статус: {user[3]}
+
     '''
-    await message.answer(text=text)
+    await message.answer(text=text, reply_markup=AdmKbs.UserMarkup(user[0]))
 
 @dp.message_handler(commands='verif')
 async def take_verif(message: types.Message, state: FSMContext):
@@ -156,6 +165,18 @@ https://t.me/gnt_ebot?start={message.text}
     else:
         await message.answer('Ссылка не найдена, введите другой заголовок: ', reply_markup=AdmKbs.BackMarkup)
         await Admin.ref_name_check.set()
+
+@dp.callback_query_handler(AdmKbs.user_markup_callbackdata.filter(wtodo='balance'), state='*')
+async def update_user_balance(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
+    await call.message.answer('Введите какой баланс сделать пользователю: ', reply_markup=AdmKbs.BackMarkup)
+    await state.update_data(id=callback_data['id'])
+    await Admin.update_balance_adm.set()
+
+@dp.message_handler(state=Admin.update_balance_adm)
+async def update_balance(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    try: users_con.set_balance(data['id'], int(message.text))
+    except: return await message.answer('Ошибка')
 
 
 

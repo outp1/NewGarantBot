@@ -10,11 +10,16 @@ class IsGroupJoin(BoundFilter):
         self.is_group_join = is_group_join
 
     async def check(self, update: types.ChatMemberUpdated):
-        if update.new_chat_member.status in ("member", "creator"):
+        print(update)
+        print(update.new_chat_member.status)
+        print(update.old_chat_member.status)
+        if update.new_chat_member.status == 'member':
+            return True
+        if update.new_chat_member.status in ("member", "creator", "left"):
             if str(update.chat.id) in SERVICES_CHAT:
                 print('true')
                 return True
-        elif update.old_chat_member.status in ("member", "administrator", 'admin', "creator"):
+        elif update.old_chat_member.status in ("member", "administrator", 'admin', "creator", "left"):
             if str(update.chat.id) in SERVICES_CHAT:
                 print('true')
                 return True
