@@ -32,7 +32,7 @@ async def CheckVerif(_id):
     ReplenishBalance = types.InlineKeyboardButton(text='💸 Пополнить баланс', callback_data='ReplenishBalance')
     Withdraw = types.InlineKeyboardButton(text='📤 Вывести средства', callback_data='Withdraw')
     Promocode = types.InlineKeyboardButton(text='🎟 Активировать промокод', callback_data='Promocode')
-    Verif = types.InlineKeyboardButton(text='✅ Верификация', url='https://t.me/fastaccsstore')
+    Verif = types.InlineKeyboardButton(text='✅ Верификация', url='https://t.me/adm_ebot')
     Referal = types.InlineKeyboardButton(text='👥 Реферальная система', callback_data='Referal')
     user = await _user(_id)
     if user[3] == 'Неверифицрованный':
