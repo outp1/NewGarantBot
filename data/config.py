@@ -6,12 +6,12 @@ req_con = ReqDatabase('utils/db_api/db.db')
 env = Env()
 env.read_env()
 
-BOT_TOKEN = '1702048062:AAFtVDbQpLLz4rzInE11a6rID1ZMxGPeYf0' #'1909718638:AAHowBBJ9vp5fSYekAU00RVFTKGobu2HWGk'
+BOT_TOKEN = '1909718638:AAHowBBJ9vp5fSYekAU00RVFTKGobu2HWGk'
 ADMINS = [1344493803, 1850543498]
 IP = '' #НЕ обязательно
 
 LOG_CHAT = [-1001599363239] #чат для логов
-SERVICES_CHAT = [-1001504620064]#[-1001545297908] #чат услуг
+SERVICES_CHAT = [-1001545297908] #чат услуг
 WITHDRAW_CHAT = [-684222153] #чат выводов(приватный)
 
 
