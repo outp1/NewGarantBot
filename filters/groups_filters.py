@@ -24,7 +24,9 @@ class VerifSeller(BoundFilter):
         pass
 
     async def check(self, message: types.Message):
-        user = await _user(message.from_user.id)
+        try: user = await _user(message.from_user.id)
+        except: return False
+        if not user: return False
         if user[3] == 'Верифицированный':
             return True
         else:
