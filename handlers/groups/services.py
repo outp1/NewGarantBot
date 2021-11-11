@@ -53,8 +53,9 @@ async def mentioning(message: types.Message):
             mentions = re.findall("@\w+", message.text)
             for mention in mentions:
                 if mention != '@gnt_ebot':
-                    return await bot.delete_message(message.chat.id, message.message_id) and await message.answer(f'😢 <b>{user.mention}, вы указали в своём рекламном сообщении сторонний сервис!</b>\n\n' 
-                                            f'<b>Вам необходимо пройти верификацию для того, чтобы отправлять подобное</b>', reply_markup=Verif)
+                    if mention != message.from_user.mention:
+                        return await bot.delete_message(message.chat.id, message.message_id) and await message.answer(f'😢 <b>{user.mention}, вы указали в своём рекламном сообщении сторонний сервис!</b>\n\n' 
+                                                f'<b>Вам необходимо пройти верификацию для того, чтобы отправлять подобное</b>', reply_markup=Verif)
     if "@gnt_ebot" not in message.text:
         await bot.delete_message(message.chat.id, message.message_id)
         text=f'''
