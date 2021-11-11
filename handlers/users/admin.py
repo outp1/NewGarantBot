@@ -117,7 +117,7 @@ async def check_refs(message: types.Message, state: FSMContext):
     '''
     await message.answer(text=text, reply_markup=AdmKbs.UserMarkup(user[0]))
 
-@dp.message_handler(commands='verif')
+@dp.message_handler(commands='verif', state='*')
 async def take_verif(message: types.Message, state: FSMContext):
     if message.from_user.id in ADMINS:
         await message.answer('Айди юзера:')
@@ -126,6 +126,7 @@ async def take_verif(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Admin.id_verif)
 async def set_verif(message: types.Message, state: FSMContext):
     users_con.take_verif(message.text)
+    await state.finish()
 
 @dp.callback_query_handler(text='referals')
 async def referals(call: types.CallbackQuery, state: FSMContext):

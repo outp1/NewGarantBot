@@ -6,7 +6,7 @@ req_con = ReqDatabase('utils/db_api/db.db')
 env = Env()
 env.read_env()
 
-BOT_TOKEN = '1909718638:AAHowBBJ9vp5fSYekAU00RVFTKGobu2HWGk'
+BOT_TOKEN =  '1909718638:AAHowBBJ9vp5fSYekAU00RVFTKGobu2HWGk'
 ADMINS = [1344493803, 1850543498]
 IP = '' #НЕ обязательно
 

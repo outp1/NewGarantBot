@@ -47,13 +47,13 @@ async def mentioning(message: types.Message):
             links = re.search("(?P<url>https?://[^\s]+)", message.text).group("url").split('\n')
             for link in links:
                 try: check = re.search(r'gnt_ebot', link.split('/')[3]).group()
-                except: return await message.answer(f'😢 <b>{user.mention}, вы указали в своём рекламном сообщении сторонний сервис!</b>\n\n' 
+                except: return await bot.delete_message(message.chat.id, message.message_id) and await message.answer(f'😢 <b>{user.mention}, вы указали в своём рекламном сообщении сторонний сервис!</b>\n\n' 
                                             f'<b>Вам необходимо пройти верификацию для того, чтобы отправлять подобное</b>', reply_markup=Verif)
         elif a.type == "mention":
             mentions = re.findall("@\w+", message.text)
             for mention in mentions:
                 if mention != '@gnt_ebot':
-                    return await message.answer(f'😢 <b>{user.mention}, вы указали в своём рекламном сообщении сторонний сервис!</b>\n\n' 
+                    return await bot.delete_message(message.chat.id, message.message_id) and await message.answer(f'😢 <b>{user.mention}, вы указали в своём рекламном сообщении сторонний сервис!</b>\n\n' 
                                             f'<b>Вам необходимо пройти верификацию для того, чтобы отправлять подобное</b>', reply_markup=Verif)
     if "@gnt_ebot" not in message.text:
         await bot.delete_message(message.chat.id, message.message_id)

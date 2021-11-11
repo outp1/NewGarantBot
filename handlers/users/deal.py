@@ -298,7 +298,8 @@ async def buydeals_sendmoney(call: types.CallbackQuery, callback_data: dict, sta
 @dp.message_handler(state=Feed.rate)
 async def set_rate(message: types.Message, state: FSMContext):
     data = await state.get_data()
-    await bot.delete_message(message.from_user.id, data['msg'].message_id)
+    try: await bot.delete_message(message.from_user.id, data['msg'].message_id)
+    except: pass
     try: rate = int(message.text)
     except:
         await message.answer('<b>✌️Оцените качество товара написав цифру от 1 до 10: </b>')
