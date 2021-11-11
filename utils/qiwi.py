@@ -2,7 +2,6 @@ import asyncio
 #from data.config import QIWI_ST, QIWI_PHONE
 import json
 import aiohttp
-from SimpleQIWI import *
 from glQiwiApi import QiwiWrapper
 from datetime import datetime, timezone, timedelta
 from data.config import qiwi, banker
