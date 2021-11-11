@@ -33,8 +33,9 @@ async def verif_seller(message: types.Message):
 
 @dp.message_handler(ServicesChat(), state='*')
 async def mentioning(message: types.Message):
-    user = await bot.get_chat(message.from_user.id)
-    member = await bot.get_chat_member(message.chat.id, user.id)
+    try: user = await bot.get_chat(message.from_user.id)
+    except: pass
+    member = await bot.get_chat_member(message.chat.id, message.from_user.id)
     if member.status in ['admin', 'creator', 'administrator']:
         return
     for a in message.entities:
