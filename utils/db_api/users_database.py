@@ -42,7 +42,7 @@ class UsersDatabase(Sqlighter):
                 else:
 
                     reg_time = datetime.datetime.today().strftime("%Y.%d.%m")
-                    cursor.execute('INSERT INTO users (user_id, registration_date) VALUES(%s, %s)', (_id, reg_time))
+                    cursor.execute('INSERT INTO users (user_id, registration_date) VALUES(%s, TO_DATE(%s, "DD/MM/YYYY"))', (_id, reg_time))
                     connection.commit()
                     if mention:
                         cursor.execute('UPDATE users SET nickname = %s WHERE user_id = %s', (mention, _id))
