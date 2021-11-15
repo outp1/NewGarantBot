@@ -10,8 +10,9 @@ MenuMarkup = types.ReplyKeyboardMarkup(resize_keyboard=True)
 SearchSeller = types.KeyboardButton(text='🔍 Поиск продавца')
 MyDeals = types.KeyboardButton(text='🤝 Сделки')
 Profile = types.KeyboardButton(text='💁‍♂ Профиль')
+Autoposting = types.KeyboardButton(text='🤖 Автопостинг ЁУслуги')
 Info = types.KeyboardButton(text='ℹ Инфо')
-MenuMarkup.add(SearchSeller).add(MyDeals, Profile).add(Info)
+MenuMarkup.add(SearchSeller).add(MyDeals, Profile).add(Autoposting).add(Info)
 
 GoMenuMarkup = types.InlineKeyboardMarkup()
 GoMenu = types.InlineKeyboardButton(text='⬅', callback_data='GoMenu')
@@ -156,6 +157,10 @@ ConfirmBankerW.add(types.InlineKeyboardButton(text='✅ Подтвердить',
 P2PMethod = types.InlineKeyboardMarkup()
 P2PMethod.add(types.InlineKeyboardButton('✅ Проверить оплату', callback_data='check_p2p')).add(types.InlineKeyboardButton('❌ Отменить', callback_data='cancel_p2p'))
 
+AutopostingMenu = types.InlineKeyboardMarkup()
+SimplePosting = types.InlineKeyboardButton(text='💬 Обычное', callback_data='SimplePosting')
+WithLinkPosting = types.InlineKeyboardButton(text='🔗 Со ссылкой', callback_data='WithLinkPosting')
+AutopostingMenu.add(SimplePosting, WithLinkPosting)
 
 
 

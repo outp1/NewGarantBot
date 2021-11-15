@@ -18,7 +18,7 @@ data_qiwi = qiwi()
 data_banker = banker()
 
 
-btc = Banker(data_banker[0], data_banker[1], data_banker[2], data_banker[3])
+#btc = Banker(data_banker[0], data_banker[1], data_banker[2], data_banker[3])
 qiwi = Qiwi(data_qiwi[0], data_qiwi[1], data_qiwi[2])
 
 async def mailing_logchat(text):

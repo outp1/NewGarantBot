@@ -12,7 +12,7 @@ class UsersDatabase(Sqlighter):
                 table = """
                 CREATE TABLE IF NOT EXISTS users (
     user_id           INT    NOT NULL,
-    registration_date TIMESTAMP   NOT NULL,
+    registration_date DATE   NOT NULL,
     rating            NUMERIC   DEFAULT (0) 
                              NOT NULL,
     status            TEXT DEFAULT 'Неверифицрованный',
@@ -41,15 +41,14 @@ class UsersDatabase(Sqlighter):
                     return user
                 else:
 
-                    reg_time = datetime.datetime.today().strftime("%d.%m.%Y")
-                    user = cursor.execute('INSERT INTO users (user_id, registration_date) VALUES(%s, %s)', (_id, reg_time))
+                    reg_time = datetime.datetime.today().strftime("%Y.%d.%m")
+                    cursor.execute('INSERT INTO users (user_id, registration_date) VALUES(%s, %s)', (_id, reg_time))
                     connection.commit()
                     if mention:
-                        user = cursor.execute('UPDATE users SET nickname = %s WHERE user_id = %s', (mention, _id))
+                        cursor.execute('UPDATE users SET nickname = %s WHERE user_id = %s', (mention, _id))
                         connection.commit()
                     if ref:
                         self.add_ref(ref)
-                    return user
 
 
     #ПОЛУЧАЕМ ПРОДАВЦА

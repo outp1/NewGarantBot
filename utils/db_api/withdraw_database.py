@@ -30,7 +30,8 @@ class WithdrawDatabase(Sqlighter):
             with connection:
                 cursor.execute('INSERT INTO withdraw (uniq_id, user_id, amount, method, req) VALUES (%s, %s, %s, %s, %s)', (_id, user_id, amount, method, req))
                 connection.commit()
-                a = cursor.execute('SELECT * FROM withdraw WHERE uniq_id = %s', (_id,)).fetchone()
+                cursor.execute('SELECT * FROM withdraw WHERE uniq_id = %s', (_id,))
+                a = cursor.fetchone()
                 return a
 
     def update_withdraw(self, _id, status):
@@ -44,8 +45,8 @@ class WithdrawDatabase(Sqlighter):
         with Sqlighter(self.db_name) as connection:
             cursor = connection.cursor()
             with connection:
-                return cursor.execute('SELECT * FROM withdraw WHERE uniq_id = %s', (_id,)).fetchone()
-
+                cursor.execute('SELECT * FROM withdraw WHERE uniq_id = %s', (_id,))
+                return cursor.fetchone()
 
 
 
