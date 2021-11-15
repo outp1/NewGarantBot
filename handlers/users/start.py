@@ -41,8 +41,8 @@ async def bot_start(message: types.Message):
         else:
             await _user(message.from_user.id)
         text = text + '\n\n Для корректного использования бота, пожалуйста, установите себе никнейм в настройках и снова напишите /start'
-    #await message.answer_photo(photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption=text, reply_markup=MainKbs.MenuMarkup)
-    await message.answer('text', reply_markup=MainKbs.MenuMarkup)
+    await message.answer_photo(photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption=text, reply_markup=MainKbs.MenuMarkup)
+
 @dp.message_handler(IsNotSub(), state='*')
 async def msg(m: types.Message, state: FSMContext):
     try: await state.finish()
