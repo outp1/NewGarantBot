@@ -216,7 +216,7 @@ async def adm_confirm_w(call: types.CallbackQuery, callback_data: dict, state: F
     w = await take_withdraw(callback_data['w'])
     user = await bot.get_chat(w[1])
     with suppress(MessageNotModified):
-        await bot.edit_message_text(call.message.text, call.message.sender_chat.id, call.message.message_id)
+        await bot.edit_message_text(call.message.text, call.message.chat.id, call.message.message_id)
     await bot.send_message(w[1], text=f'<b>✅ Заявка на вывод под номером <code>{w[0]}</code> успешно выполнена! </b>')
     await update_withdraw(w[0], 1)
     text = f"""<b> 
