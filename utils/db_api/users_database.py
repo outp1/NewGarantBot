@@ -41,7 +41,7 @@ class UsersDatabase(Sqlighter):
                     return user
                 else:
 
-                    reg_time = datetime.datetime.today().strftime("%y-%d-%m")
+                    reg_time = datetime.datetime.today().strftime("%Y-%m-%d")
                     cursor.execute('INSERT INTO users (user_id, registration_date) VALUES(%s, DATE %s)', (_id, reg_time))
                     connection.commit()
                     if mention:
