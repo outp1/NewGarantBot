@@ -1,4 +1,6 @@
 import random
+import glob
+import os
 
 from loader import deal_con
 
@@ -16,3 +18,9 @@ def rand_id_to_acc():
     while generate() == None:
         generate()
     return _id
+
+def take_last_logfile():
+    list_f = glob.glob('./logs/*')
+    last_f = min(list_f, key=os.path.getctime)
+    return last_f
+

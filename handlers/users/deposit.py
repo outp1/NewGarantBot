@@ -15,10 +15,12 @@ from aiogram.utils.exceptions import MessageNotModified
 from utils.p2p import QiwiP2P
 
 data_qiwi = qiwi()
-data_banker = banker()
+try: data_banker = banker() 
+except: data_banker = None #для включения апи клиента, необходимо иметь файл сессии телеграмм аккаунта в корне проекта
 
-
-btc = Banker(data_banker[0], data_banker[1], data_banker[2], data_banker[3])
+if data_banker: 
+    try: btc = Banker(data_banker[0], data_banker[1], data_banker[2], data_banker[3])
+    except: btc = None #для включения апи клиента, необходимо иметь файл сессии телеграмм аккаунта в корне проекта
 qiwi = Qiwi(data_qiwi[0], data_qiwi[1], data_qiwi[2])
 
 async def mailing_logchat(text):
@@ -89,9 +91,7 @@ async def qiwi_method(message: types.Message, state: FSMContext):
 @dp.callback_query_handler(text='check_qiwi', state='*')
 async def check_payment_qiwi(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    print(data)
     status = await check_bill(data['amount'], data['comment'])
-    print(status)
     if status:
         await update_balance(call.from_user.id, amount=data['amount'])
         await call.answer('✅ Баланс пополнен')
@@ -311,7 +311,6 @@ async def adm_confirm_w(call: types.CallbackQuery, callback_data: dict, state: F
 
 @dp.callback_query_handler(MainKbs.banker_admin_callbackdata.filter(wtodo='replish'))
 async def adm_replish_w(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    print('a')
     text = call.message.text + '\n\n Деньги возвращены'
     w = await take_withdraw(callback_data['w'])
     user = await bot.get_chat(w[1])

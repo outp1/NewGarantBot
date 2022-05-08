@@ -11,7 +11,7 @@ class UsersDatabase(Sqlighter):
             with connection:
                 table = """
                 CREATE TABLE IF NOT EXISTS users (
-    user_id           INT    NOT NULL,
+    user_id           BIGINT    NOT NULL,
     registration_date DATE   NOT NULL,
     rating            NUMERIC   DEFAULT (0) 
                              NOT NULL,

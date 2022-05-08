@@ -314,7 +314,6 @@ async def set_rate(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(MainKbs.selldeals_callback_data.filter(dispute='False'), state='*')
 async def selldeals_returnmoney(call: types.CallbackQuery, callback_data: dict, state: FSMContext):
-    print(callback_data)
     text = '<b>Подтвердите действие, и деньги будут возвращены, а сделка закрыта</b>'
     await call.message.answer(text, reply_markup=MainKbs.ConfirmReturnMoney)
     await state.update_data(deal=callback_data['_id'], dispute=callback_data['dispute'])
@@ -342,7 +341,6 @@ async def selldeals_dispute(call: types.CallbackQuery, callback_data: dict, stat
 async def ConfirmDispute(call: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
     deal = await take_deal(data['deal'])
-    print(deal)
     if data['send'] == 'user':
         user = await _user(deal[3])
         seller = await _user(deal[4])

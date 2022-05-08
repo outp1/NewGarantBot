@@ -2,13 +2,13 @@ from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
 from keyboards import *
 from aiogram.dispatcher.storage import FSMContext
-from loader import dp, bot, users_con, ref_con
+from loader import dp, bot, users_con, ref_con, req_con
 from filters import *
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from data.config import ADMINS
 from states.states import Admin
-from data.config import req_con
 from .deal import _user
+from utils.misc import other
 
 async def switch_banker(token, api_hash, login, _pass):
     req_con.switch_banker(token, api_hash, login, _pass)
@@ -26,6 +26,12 @@ async def take_link_stats(text):
     return ref_con.take_link(str(text))
 
 
+@dp.callback_query_handler(text='downloads_logs', state='*', is_admin=True)
+async def downloads_logs(call: types.CallbackQuery):
+    file = other.take_last_logfile()
+    files = {'logfile': file}
+    file = open(file, 'rb')
+    await call.message.answer_document(document=file)
 
 @dp.message_handler(IsPrivate(), commands='ebot', state='*', is_admin=True)
 async def adm_panel(message: types.Message):
@@ -103,7 +109,6 @@ async def ref_stats(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(state=Admin.id_refs)
 async def check_refs(message: types.Message, state: FSMContext):
-    print('a')
     user = await _user(int(message.text))
     text = f'''
 Айди пользователя: {str(user[0])}
@@ -154,7 +159,6 @@ async def check_ref(call: types.CallbackQuery):
 @dp.message_handler(state=Admin.ref_name_check)
 async def ref_stats(message: types.Message):
     a = await take_link_stats(message.text)
-    print(a)
     if a:
         text=f'''<b>
 Ссылка: 

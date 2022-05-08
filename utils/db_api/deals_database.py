@@ -14,9 +14,9 @@ class DealsDatabase(Sqlighter):
                 CREATE TABLE IF NOT EXISTS deals (
     deal_id     INT      NOT NULL,
     price       INT      NOT NULL,
-    description TEXT      NOT NULL,
-    client      INT      NOT NULL,
-    seller      INT      NOT NULL,
+    description TEXT          NOT NULL,
+    client      BIGINT      NOT NULL,
+    seller      BIGINT      NOT NULL,
     status      INTEGER  DEFAULT (0) 
                          NOT NULL,
     date        TIMESTAMP NOT NULL

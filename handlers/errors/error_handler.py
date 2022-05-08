@@ -3,7 +3,6 @@ from aiogram.utils.exceptions import (TelegramAPIError,
                                       MessageNotModified,
                                       CantParseEntities)
 
-
 from loader import dp
 
 
@@ -22,7 +21,7 @@ async def errors_handler(update, exception):
         logging.exception('Message is not modified')
         # do something here?
         return True
-      
+
     if isinstance(exception, CantParseEntities):
         # or here
         logging.exception(f'CantParseEntities: {exception} \nUpdate: {update}')

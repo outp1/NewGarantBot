@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: database
+    image: postgres:13
+    restart: always
+    env_file:
+      - ".env"
+    volumes:
+      - ./database:/var/lib/postgresql/
+    ports:
+      - 5438:5432
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+  tgbot:
+    container_name: tg_bot
+    restart: always
+    build:
+      context: .
+    command: python app.py
+    env_file:
+      - ".env"
+
+
+

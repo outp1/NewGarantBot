@@ -8,6 +8,7 @@ MainMarkup.add(types.InlineKeyboardButton(text='Статистика', callback_
 MainMarkup.add(types.InlineKeyboardButton(text='Управление пользователем', callback_data='manage_user'))
 MainMarkup.add(types.InlineKeyboardButton(text='Рассылка', callback_data='mailing'))
 MainMarkup.add(types.InlineKeyboardButton(text='Рефералки', callback_data='referals'))
+MainMarkup.add(types.InlineKeyboardButton(text='Логи бота', callback_data='downloads_logs'))
 
 Requisites = types.InlineKeyboardMarkup()
 Requisites.add(types.InlineKeyboardButton(text='Банкир', callback_data='switch_banker'))

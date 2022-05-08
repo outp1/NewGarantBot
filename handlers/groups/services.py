@@ -72,8 +72,5 @@ async def mentioning(message: types.Message):
 
 
 
-@dp.message_handler()
-async def a(message: types.Message):
-    print(message.chat.id)
 
 

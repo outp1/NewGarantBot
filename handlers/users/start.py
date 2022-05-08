@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types
 from aiogram.dispatcher.filters.builtin import CommandStart
 from keyboards import *
@@ -19,17 +21,15 @@ async def _user(_id, mention=None, ref=None):
 async def bot_start(message: types.Message):
     chat = await bot.get_chat(message.from_user.id)
     mention = chat.mention
+    text = '🔝 <b>Главное меню</b>'
     for i in SERVICES_CHAT:
-        print(i)
+        print('CHAT:', i)
         chat_check = await bot.get_chat(i)
         status = await bot.get_chat_member(i, message.from_user.id)
         if status.status in ['left', 'kicked']:
             link = await chat_check.get_url()
             print(link)
             return await message.answer(f'❕ <b>Чтобы пользоваться гарант ботом вступите в чат услуг проекта:</b>', reply_markup=MainKbs.LinkServices(link))
-    text = f"""
-🔝 <b>Главное меню</b>
-    """
     if '@' in mention:
         if message.text[7:]:
             await _user(message.from_user.id, mention, message.text[7:])
@@ -40,8 +40,8 @@ async def bot_start(message: types.Message):
             await _user(message.from_user.id, mention, message.text[7:])
         else:
             await _user(message.from_user.id)
-        text = text + '\n\n Для корректного использования бота, пожалуйста, установите себе никнейм в настройках и снова напишите /start'
-    await message.answer_photo(photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption=text, reply_markup=MainKbs.MenuMarkup)
+        text = text + '\n\n‼ <b>Для корректного использования бота, пожалуйста, установите себе никнейм в настройках и снова напишите /start</b>'
+    await message.answer(text=text, reply_markup=MainKbs.MenuMarkup)
 
 @dp.message_handler(IsNotSub(), state='*')
 async def msg(m: types.Message, state: FSMContext):
@@ -64,10 +64,7 @@ async def bot_start(call: types.CallbackQuery, state: FSMContext):
     try: await bot.delete_message(call.from_user.id, call.message.message_id)
     except: pass
     await state.finish()
-    text='🔝 <b>Главное меню</b>'
-    await call.message.answer_photo(
-        photo='AgACAgIAAxkBAAIS1WGFSiEISawI2JOKlAE2MnQtwvx6AAJLuDEbrQQpSDzi9IGsnYwrAQADAgADcwADIgQ', caption=text,
-        reply_markup=MainKbs.MenuMarkup)
+    await call.message.answer(text='🔝 <b>Главное меню</b>', reply_markup=MainKbs.MenuMarkup)
     chat = await bot.get_chat(call.from_user.id)
     mention = chat.mention
     if '@' in mention:
@@ -77,7 +74,6 @@ async def bot_start(call: types.CallbackQuery, state: FSMContext):
 
 @dp.chat_member_handler(is_group_join=True, state='*')
 async def new_user_channel(update: types.ChatMemberUpdated, state: FSMContext):
-    print('da')
     try: await bot.get_chat(update.new_chat_member.user.id)
     except:
         try: await state.finish()
@@ -104,8 +100,8 @@ async def new_user_channel(update: types.ChatMemberUpdated, state: FSMContext):
                              reply_markup=MainKbs.MenuMarkup)
 
 
-
-
+import requests
+from utils.misc import other
 #ПРОФИЛЬ
 @dp.message_handler(IsPrivate(), text='💁‍♂ Профиль', state='*')
 async def profile(message: types.Message, state: FSMContext):
